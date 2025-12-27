@@ -1,0 +1,180 @@
+<%- include('../layout', { body: `
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-chart-pie me-2"></i>Статистика качества</h1>
+            <a href="/quality/dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Назад к панели
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Общая статистика качества -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">${qualityStats.overdue_count || 0}</h4>
+                        <p class="card-text">Просрочено</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">${qualityStats.escalations_count || 0}</h4>
+                        <p class="card-text">Эскалации</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">${qualityStats.avg_rating ? qualityStats.avg_rating.toFixed(1) : 'N/A'}</h4>
+                        <p class="card-text">Средняя оценка</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">${qualityStats.total_ratings || 0}</h4>
+                        <p class="card-text">Всего оценок</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-star fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Распределение оценок -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar me-2"></i>Показатели качества</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Соблюдение сроков</label>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-warning" style="width: 78%">
+                            78%
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Процент заявок без эскалаций</label>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" style="width: 92%">
+                            92%
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Уровень удовлетворенности клиентов</label>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" style="width: 85%">
+                            85%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-star me-2"></i>Распределение оценок</h5>
+            </div>
+            <div class="card-body">
+                ${qualityStats.total_ratings > 0 ? `
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>1 звезда</span>
+                        <span class="badge bg-danger">${qualityStats.rating_1 || 0}</span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-danger" style="width: 10%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>2 звезды</span>
+                        <span class="badge bg-orange">${qualityStats.rating_2 || 0}</span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-orange" style="width: 20%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>3 звезды</span>
+                        <span class="badge bg-warning">${qualityStats.rating_3 || 0}</span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-warning" style="width: 40%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>4 звезды</span>
+                        <span class="badge bg-info">${qualityStats.rating_4 || 0}</span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-info" style="width: 60%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>5 звезд</span>
+                        <span class="badge bg-success">${qualityStats.rating_5 || 0}</span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" style="width: 80%"></div>
+                    </div>
+                </div>
+                ` : `
+                <p class="text-muted">Пока нет оценок для анализа</p>
+                `}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-orange {
+    background-color: #fd7e14 !important;
+}
+</style>
+` }) %>

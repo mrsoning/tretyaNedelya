@@ -1,0 +1,43 @@
+<%- include('layout', { body: `
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    ${error.status === 404 ? `
+                        <i class="fas fa-search fa-4x text-muted"></i>
+                    ` : error.status === 403 ? `
+                        <i class="fas fa-lock fa-4x text-warning"></i>
+                    ` : `
+                        <i class="fas fa-exclamation-triangle fa-4x text-danger"></i>
+                    `}
+                </div>
+                
+                <h1 class="display-4 mb-3">
+                    ${error.status || 'Ошибка'}
+                </h1>
+                
+                <h4 class="mb-4 text-muted">
+                    ${message}
+                </h4>
+                
+                <div class="mb-4">
+                    <a href="/" class="btn btn-primary me-2">
+                        <i class="fas fa-home me-2"></i>На главную
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Назад
+                    </button>
+                </div>
+                
+                ${error.stack && process.env.NODE_ENV !== 'production' ? `
+                <details class="text-start">
+                    <summary class="btn btn-outline-info btn-sm">Техническая информация</summary>
+                    <pre class="mt-3 p-3 bg-light border rounded"><code>${error.stack}</code></pre>
+                </details>
+                ` : ''}
+            </div>
+        </div>
+    </div>
+</div>
+` }) %>

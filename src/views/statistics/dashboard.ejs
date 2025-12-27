@@ -1,0 +1,224 @@
+<%- include('../layout', { body: `
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-chart-bar me-2"></i>Статистика и отчеты</h1>
+        </div>
+    </div>
+</div>
+
+<!-- Общая статистика -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">${statistics.avgCompletionTime || 'N/A'}</h4>
+                        <p class="card-text">Среднее время</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">${statistics.activeRequests}</h4>
+                        <p class="card-text">В работе</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-cog fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">${statistics.totalRequests}</h4>
+                        <p class="card-text">Всего заявок</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clipboard-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">${statistics.completedRequests}</h4>
+                        <p class="card-text">Завершено</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Статистика по типам техники -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-tasks me-2"></i>Статистика по статусам</h5>
+            </div>
+            <div class="card-body">
+                ${statistics.statusStats && statistics.statusStats.length > 0 ? `
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Статус</th>
+                                <th>Количество</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${statistics.statusStats.map(stat => `
+                            <tr>
+                                <td>
+                                    <span class="badge status-badge" data-status="${stat.request_status}">
+                                        ${stat.request_status}
+                                    </span>
+                                </td>
+                                <td>${stat.count}</td>
+                                <td>${((stat.count / statistics.totalRequests) * 100).toFixed(1)}%</td>
+                            </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                ` : `
+                <p class="text-muted">Нет данных для отображения</p>
+                `}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-tv me-2"></i>Статистика по типам техники</h5>
+            </div>
+            <div class="card-body">
+                ${statistics.techTypeStats && statistics.techTypeStats.length > 0 ? `
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Тип техники</th>
+                                <th>Количество</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${statistics.techTypeStats.map(stat => `
+                            <tr>
+                                <td>${stat.home_tech_type}</td>
+                                <td><span class="badge bg-primary">${stat.count}</span></td>
+                                <td>${((stat.count / statistics.totalRequests) * 100).toFixed(1)}%</td>
+                            </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                ` : `
+                <p class="text-muted">Нет данных для отображения</p>
+                `}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Статистика по мастерам -->
+${statistics.masterStats && statistics.masterStats.length > 0 ? `
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-users me-2"></i>Статистика по мастерам</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Мастер</th>
+                                <th>Всего заявок</th>
+                                <th>Завершено</th>
+                                <th>В работе</th>
+                                <th>Эффективность</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${statistics.masterStats.map(stat => `
+                            <tr>
+                                <td><strong>${stat.master_name || 'Не назначен'}</strong></td>
+                                <td><span class="badge bg-primary">${stat.total}</span></td>
+                                <td><span class="badge bg-success">${stat.completed}</span></td>
+                                <td><span class="badge bg-warning">${stat.active}</span></td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: ${stat.efficiency || 0}%" 
+                                             aria-valuenow="${stat.efficiency || 0}" 
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            ${stat.efficiency || 0}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+` : ''}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Раскраска статусов
+    const statusBadges = document.querySelectorAll('.status-badge');
+    statusBadges.forEach(badge => {
+        const status = badge.getAttribute('data-status');
+        badge.classList.remove('bg-secondary');
+        
+        switch(status) {
+            case 'Новая заявка':
+                badge.classList.add('bg-primary');
+                break;
+            case 'В процессе ремонта':
+                badge.classList.add('bg-warning', 'text-dark');
+                break;
+            case 'Готова к выдаче':
+                badge.classList.add('bg-success');
+                break;
+            case 'Ожидание запчастей':
+                badge.classList.add('bg-info');
+                break;
+            default:
+                badge.classList.add('bg-secondary');
+        }
+    });
+});
+</script>
+` }) %>

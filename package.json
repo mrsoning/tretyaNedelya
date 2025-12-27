@@ -1,0 +1,38 @@
+{
+  "name": "repair-service-system",
+  "version": "1.0.0",
+  "description": "Система учета заявок на ремонт бытовой техники",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "start:v3": "node src/app_v3.js",
+    "dev": "nodemon src/app.js",
+    "dev:v3": "nodemon src/app_v3.js",
+    "test": "jest",
+    "test:v3": "node test_v3_system.js",
+    "quick": "node start.js",
+    "quick:v3": "node start.js v3"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "csv-parser": "^3.0.0",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "jsonwebtoken": "^9.0.0",
+    "qrcode": "^1.5.4",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.3"
+  },
+  "keywords": [
+    "repair",
+    "service",
+    "management"
+  ],
+  "author": "IT-Com Service Center",
+  "license": "MIT"
+}

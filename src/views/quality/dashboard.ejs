@@ -1,0 +1,350 @@
+<%- include('../layout', { body: `
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-award me-2"></i>Панель менеджера по качеству
+        </h1>
+    </div>
+</div>
+
+<!-- Карточки статистики -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Отзывы</h5>
+                        <h2 class="mb-0">${qualityStats.feedback_received || 0}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-comments fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-success">
+                <span class="text-white">получено отзывов</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Средний рейтинг</h5>
+                        <h2 class="mb-0">${qualityStats.avg_rating ? qualityStats.avg_rating.toFixed(1) : 'N/A'}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-star fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-info">
+                <a href="/quality/statistics" class="text-white text-decoration-none">
+                    Статистика <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Эскалации</h5>
+                        <h2 class="mb-0">${escalatedRequests.length}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-danger">
+                <a href="/quality/escalations" class="text-white text-decoration-none">
+                    Управлять <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Просроченные</h5>
+                        <h2 class="mb-0">${overdueRequests.length}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-warning">
+                <a href="/quality/overdue" class="text-white text-decoration-none">
+                    Просмотреть <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Эскалированные заявки -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2 text-danger"></i>Активные эскалации
+                </h5>
+            </div>
+            <div class="card-body">
+                ${escalatedRequests.length === 0 ? `
+                <div class="text-center py-3">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h6 class="text-success">Активных эскалаций нет</h6>
+                </div>
+                ` : `
+                <div class="list-group list-group-flush">
+                    ${escalatedRequests.slice(0, 5).map(escalation => `
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">${escalation.request_number}</h6>
+                            <small class="text-muted">${new Date(escalation.created_at).toLocaleDateString('ru-RU')}</small>
+                        </div>
+                        <p class="mb-1">${escalation.escalation_reason}</p>
+                        <small class="text-muted">
+                            Тип: ${escalation.escalation_type} | 
+                            От: ${escalation.escalated_by_name}
+                        </small>
+                    </div>
+                    `).join('')}
+                </div>
+                `}
+                
+                ${escalatedRequests.length > 5 ? `
+                <div class="text-center mt-3">
+                    <a href="/quality/escalations" class="btn btn-outline-danger">
+                        Показать все (${escalatedRequests.length})
+                    </a>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    </div>
+
+    <!-- Просроченные заявки -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2 text-warning"></i>Критические просрочки
+                </h5>
+            </div>
+            <div class="card-body">
+                ${overdueRequests.length === 0 ? `
+                <div class="text-center py-3">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h6 class="text-success">Просроченных заявок нет</h6>
+                </div>
+                ` : `
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Заявка</th>
+                                <th>Клиент</th>
+                                <th>Просрочка</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${overdueRequests.slice(0, 5).map(request => `
+                            <tr>
+                                <td>
+                                    <strong>${request.request_number}</strong><br>
+                                    <small class="text-muted">${request.tech_type}</small>
+                                </td>
+                                <td>${request.client_name}</td>
+                                <td>
+                                    <span class="badge bg-danger">
+                                        ${Math.ceil(request.days_overdue)} дн.
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" onclick="extendDeadline(${request.id})">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                `}
+                
+                ${overdueRequests.length > 5 ? `
+                <div class="text-center mt-3">
+                    <a href="/quality/overdue" class="btn btn-outline-warning">
+                        Показать все (${overdueRequests.length})
+                    </a>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Уведомления -->
+${notifications.length > 0 ? `
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bell me-2"></i>Новые уведомления
+                </h5>
+            </div>
+            <div class="card-body">
+                ${notifications.map(notification => `
+                <div class="alert alert-${getNotificationClass(notification.notification_type)} alert-dismissible fade show">
+                    <strong>${notification.title}</strong><br>
+                    ${notification.message}
+                    <button type="button" class="btn-close" onclick="markAsRead(${notification.id})"></button>
+                </div>
+                `).join('')}
+            </div>
+        </div>
+    </div>
+</div>
+` : ''}
+
+<!-- Модальное окно продления срока -->
+<div class="modal fade" id="extendDeadlineModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Продление срока выполнения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="extendDeadlineForm">
+                    <input type="hidden" id="extendRequestId">
+                    <div class="mb-3">
+                        <label for="newDeadline" class="form-label">Новый срок выполнения</label>
+                        <input type="date" class="form-control" id="newDeadline" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="extensionReason" class="form-label">Причина продления</label>
+                        <textarea class="form-control" id="extensionReason" rows="3" required 
+                                  placeholder="Укажите причину необходимости продления срока..."></textarea>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Клиент будет автоматически уведомлен о продлении срока.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-warning" onclick="submitExtension()">
+                    <i class="fas fa-calendar-plus me-2"></i>Продлить срок
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function getNotificationClass(type) {
+    const classes = {
+        'info': 'info',
+        'warning': 'warning',
+        'error': 'danger',
+        'success': 'success',
+        'overdue': 'warning',
+        'escalation': 'danger'
+    };
+    return classes[type] || 'info';
+}
+
+function extendDeadline(requestId) {
+    document.getElementById('extendRequestId').value = requestId;
+    
+    // Устанавливаем минимальную дату - завтра
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('newDeadline').min = tomorrow.toISOString().split('T')[0];
+    
+    new bootstrap.Modal(document.getElementById('extendDeadlineModal')).show();
+}
+
+function submitExtension() {
+    const requestId = document.getElementById('extendRequestId').value;
+    const newDeadline = document.getElementById('newDeadline').value;
+    const reason = document.getElementById('extensionReason').value;
+
+    if (!newDeadline || !reason.trim()) {
+        alert('Заполните все поля');
+        return;
+    }
+
+    fetch('/quality/extend-deadline/' + requestId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            new_deadline: newDeadline,
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('extendDeadlineModal')).hide();
+            location.reload();
+        } else {
+            alert('Ошибка: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Произошла ошибка при продлении срока');
+    });
+}
+
+function markAsRead(notificationId) {
+    fetch('/quality/api/notifications/' + notificationId + '/read', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Уведомление будет скрыто автоматически через alert-dismissible
+        }
+    })
+    .catch(error => console.error('Ошибка отметки уведомления:', error));
+}
+
+// Автообновление уведомлений каждые 30 секунд
+setInterval(() => {
+    fetch('/quality/api/notifications')
+    .then(response => response.json())
+    .then(data => {
+        if (data.notifications && data.notifications.length > 0) {
+            // Показываем badge с количеством новых уведомлений
+            const badge = document.querySelector('.notification-badge');
+            if (badge) {
+                badge.textContent = data.notifications.length;
+                badge.style.display = 'inline';
+            }
+        }
+    })
+    .catch(error => console.error('Ошибка получения уведомлений:', error));
+}, 30000);
+</script>
+` }) %>

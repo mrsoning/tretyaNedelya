@@ -1,0 +1,104 @@
+<%- include('../layout', { body: `
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-arrow-up me-2 text-danger"></i>Эскалированные заявки</h1>
+            <a href="/quality/dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Назад к панели
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Список эскалированных заявок -->
+<div class="card">
+    <div class="card-body">
+        ${escalations.length === 0 ? `
+        <div class="text-center py-5">
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+            <h5 class="text-success">Эскалированных заявок нет</h5>
+            <p class="text-muted">Все заявки обрабатываются в штатном режиме</p>
+        </div>
+        ` : `
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Найдено <strong>${escalations.length}</strong> эскалированных заявок, требующих немедленного внимания
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Действия</th>
+                        <th>Статус</th>
+                        <th>Кому эскалировано</th>
+                        <th>Эскалировал</th>
+                        <th>Причина</th>
+                        <th>Тип эскалации</th>
+                        <th>Дата эскалации</th>
+                        <th>№ заявки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${escalations.map(escalation => `
+                    <tr class="table-danger">
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="/requests/${escalation.request_id}" class="btn btn-outline-primary" title="Просмотр заявки">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                ${escalation.status === 'Активна' ? `
+                                <button class="btn btn-outline-success" data-escalation-id="${escalation.id}" onclick="resolveEscalation(this)" title="Разрешить эскалацию">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge ${escalation.status === 'Активна' ? 'bg-warning' : 'bg-success'}">
+                                ${escalation.status}
+                            </span>
+                        </td>
+                        <td>${escalation.escalated_to_name}</td>
+                        <td>${escalation.escalated_by_name}</td>
+                        <td>
+                            <span class="text-truncate d-inline-block" style="max-width: 200px;" 
+                                  title="${escalation.reason}">
+                                ${escalation.reason}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-danger">${escalation.escalation_type}</span>
+                        </td>
+                        <td>${new Date(escalation.escalation_date).toLocaleDateString('ru-RU')}</td>
+                        <td><a href="/requests/${escalation.request_id}" class="text-decoration-none fw-bold">#${escalation.request_id}</a></td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        `}
+    </div>
+</div>
+
+<script>
+function resolveEscalation(button) {
+    const escalationId = button.getAttribute('data-escalation-id');
+    if (confirm('Отметить эскалацию как разрешенную?')) {
+        // Здесь можно добавить AJAX запрос для разрешения эскалации
+        fetch('/quality/resolve-escalation/' + escalationId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Ошибка при разрешении эскалации');
+            }
+        });
+    }
+}
+</script>
+` }) %>

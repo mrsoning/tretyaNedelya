@@ -1,0 +1,152 @@
+<%- include('../layout', { body: `
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-clipboard-list me-2"></i>Заявки</h1>
+            ${user.type === 'Оператор' || user.type === 'Менеджер' || user.type === 'Заказчик' ? `
+            <a href="/requests/new" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Новая заявка
+            </a>
+            ` : ''}
+        </div>
+    </div>
+</div>
+
+<!-- Фильтры -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="/requests" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Поиск</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="${filters.search || ''}" placeholder="Номер, тип техники, клиент...">
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Статус</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Все статусы</option>
+                    ${statuses.map(status => `
+                        <option value="${status}" ${filters.status === status ? 'selected' : ''}>${status}</option>
+                    `).join('')}
+                </select>
+            </div>
+            ${user.type !== 'Заказчик' && user.type !== 'Мастер' ? `
+            <div class="col-md-3">
+                <label for="master" class="form-label">Мастер</label>
+                <select class="form-select" id="master" name="master">
+                    <option value="">Все мастера</option>
+                    ${masters.map(master => `
+                        <option value="${master.id}" ${filters.master == master.id ? 'selected' : ''}>${master.fio}</option>
+                    `).join('')}
+                </select>
+            </div>
+            ` : ''}
+            <div class="col-md-2 d-flex align-items-end">
+                <a href="/requests" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-times"></i>
+                </a>
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Список заявок -->
+<div class="card">
+    <div class="card-body">
+        ${requests.length === 0 ? `
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Заявки не найдены</h5>
+            <p class="text-muted">Попробуйте изменить параметры поиска</p>
+        </div>
+        ` : `
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Действия</th>
+                        <th>№</th>
+                        <th>Дата</th>
+                        <th>Мастер</th>
+                        <th>Проблема</th>
+                        <th>Техника</th>
+                        <th>Клиент</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${requests.map(request => `
+                    <tr>
+                        <td>
+                            <a href="/requests/${request.id}" class="btn btn-sm btn-outline-primary" title="Просмотр">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                        <td><span class="text-muted">#${request.id}</span></td>
+                        <td>
+                            <small>${new Date(request.start_date).toLocaleDateString('ru-RU')}</small>
+                        </td>
+                        <td>
+                            ${request.master_name ? `
+                                <span class="badge bg-info">${request.master_name}</span>
+                            ` : `
+                                <span class="badge bg-secondary">Не назначен</span>
+                            `}
+                        </td>
+                        <td>
+                            <span class="text-truncate d-inline-block" style="max-width: 180px;" 
+                                  title="${request.problem_description}">
+                                ${request.problem_description}
+                            </span>
+                        </td>
+                        <td>
+                            <div><strong>${request.home_tech_type}</strong></div>
+                            <small class="text-muted">${request.home_tech_model}</small>
+                        </td>
+                        <td>
+                            <div><strong>${request.client_name}</strong></div>
+                            <small class="text-muted"><i class="fas fa-phone me-1"></i>${request.client_phone}</small>
+                        </td>
+                        <td>
+                            <span class="badge status-badge" data-status="${request.request_status}">${request.request_status}</span>
+                        </td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        `}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Раскраска статусов
+    const statusBadges = document.querySelectorAll('.status-badge');
+    statusBadges.forEach(badge => {
+        const status = badge.getAttribute('data-status');
+        badge.classList.remove('bg-secondary');
+        
+        switch(status) {
+            case 'Новая заявка':
+                badge.classList.add('bg-primary');
+                break;
+            case 'В процессе ремонта':
+                badge.classList.add('bg-warning', 'text-dark');
+                break;
+            case 'Готова к выдаче':
+                badge.classList.add('bg-success');
+                break;
+            case 'Ожидание запчастей':
+                badge.classList.add('bg-info');
+                break;
+            default:
+                badge.classList.add('bg-secondary');
+        }
+    });
+});
+</script>
+` }) %>

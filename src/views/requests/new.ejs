@@ -1,0 +1,164 @@
+<%- include('../layout', { body: `
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-plus me-2"></i>Новая заявка</h1>
+            <button onclick="history.back()" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Назад
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Информация о заявке</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/requests" id="requestForm">
+                    <!-- Сначала описание проблемы -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Описание неисправности</h6>
+                        </div>
+                        <div class="card-body">
+                            <label for="problem_description" class="form-label">
+                                Подробно опишите проблему <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="problem_description" name="problem_description" 
+                                      rows="5" placeholder="Что именно не работает? Какие симптомы наблюдаете?" required maxlength="1000"></textarea>
+                            <div class="form-text">Максимум 1000 символов. Чем подробнее описание, тем быстрее диагностика.</div>
+                        </div>
+                    </div>
+
+                    <!-- Потом техника -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0"><i class="fas fa-tv me-2"></i>Техническая информация</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="home_tech_type" class="form-label">
+                                            Категория техники <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select" id="home_tech_type" name="home_tech_type" required>
+                                            <option value="">-- Выберите категорию --</option>
+                                            <option value="Холодильник">Холодильник</option>
+                                            <option value="Стиральная машина">Стиральная машина</option>
+                                            <option value="Микроволновая печь">Микроволновая печь</option>
+                                            <option value="Посудомоечная машина">Посудомоечная машина</option>
+                                            <option value="Пылесос">Пылесос</option>
+                                            <option value="Фен">Фен</option>
+                                            <option value="Тостер">Тостер</option>
+                                            <option value="Мультиварка">Мультиварка</option>
+                                            <option value="Кофемашина">Кофемашина</option>
+                                            <option value="Другое">Другое</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="home_tech_model" class="form-label">
+                                            Модель и марка <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="home_tech_model" name="home_tech_model" 
+                                               placeholder="Например: Samsung WF60F4E0W2W" required maxlength="100">
+                                        <div class="form-text">Укажите точную модель, если известна</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- И наконец клиент -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="fas fa-user me-2"></i>Информация о клиенте</h6>
+                        </div>
+                        <div class="card-body">
+                            <label for="client_id" class="form-label">
+                                Выберите клиента <span class="text-danger">*</span>
+                            </label>
+                            ${isClient ? `
+                            <input type="text" class="form-control" value="${user.fio} (${user.phone})" readonly>
+                            <input type="hidden" name="client_id" value="${user.id}">
+                            ` : `
+                            <select class="form-select" id="client_id" name="client_id" required>
+                                <option value="">Выберите клиента из списка</option>
+                                ${clients.map(client => `
+                                    <option value="${client.id}">${client.fio} (${client.phone})</option>
+                                `).join('')}
+                            </select>
+                            `}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Обратите внимание:</strong> После создания заявка получит статус "Новая заявка" 
+                        и будет доступна для назначения мастера.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Создать заявку
+                        </button>
+                        <button type="button" onclick="history.back()" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Отмена
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Валидация формы
+document.getElementById('requestForm').addEventListener('submit', function(e) {
+    const techType = document.getElementById('home_tech_type').value;
+    const techModel = document.getElementById('home_tech_model').value;
+    const clientIdField = document.getElementById('client_id');
+    const clientId = clientIdField ? clientIdField.value : true; // Для заказчиков поле скрыто
+    const description = document.getElementById('problem_description').value;
+    
+    let errors = [];
+    
+    if (!techType) errors.push('Выберите тип техники');
+    if (!techModel.trim()) errors.push('Укажите модель техники');
+    if (clientIdField && !clientId) errors.push('Выберите клиента');
+    if (!description.trim()) errors.push('Опишите проблему');
+    
+    if (techModel.length > 100) errors.push('Модель техники слишком длинная');
+    if (description.length > 1000) errors.push('Описание проблемы слишком длинное');
+    
+    if (errors.length > 0) {
+        e.preventDefault();
+        alert('Ошибки валидации:\\n' + errors.join('\\n'));
+        return false;
+    }
+});
+
+// Счетчик символов для описания
+document.getElementById('problem_description').addEventListener('input', function() {
+    const current = this.value.length;
+    const max = 1000;
+    const formText = this.nextElementSibling;
+    
+    formText.textContent = 'Символов: ' + current + '/' + max;
+    
+    if (current > max * 0.9) {
+        formText.className = 'form-text text-warning';
+    } else if (current > max) {
+        formText.className = 'form-text text-danger';
+    } else {
+        formText.className = 'form-text';
+    }
+});
+</script>
+` }) %>

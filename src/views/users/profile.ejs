@@ -1,0 +1,213 @@
+<%- include('../layout', { body: `
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4"><i class="fas fa-user-edit me-2"></i>Мой профиль</h1>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="row">
+            <div class="col-md-4">
+                <!-- Информационная панель -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-user-circle me-2"></i>Профиль пользователя</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-user-circle fa-5x text-muted"></i>
+                        </div>
+                        <h5 class="card-title">${user.fio}</h5>
+                        <p class="card-text">
+                            <span class="badge bg-secondary">${user.type}</span>
+                        </p>
+                        <hr>
+                        <div class="text-start">
+                            <small class="text-muted">Логин:</small><br>
+                            <code>${user.login}</code><br><br>
+                            <small class="text-muted">Телефон:</small><br>
+                            <strong>${user.phone}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <!-- Форма редактирования -->
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Редактирование данных</h5>
+                    </div>
+                    <div class="card-body">
+                        ${typeof error !== 'undefined' && error ? `
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>${error}
+                        </div>
+                        ` : ''}
+                        
+                        ${typeof success !== 'undefined' && success ? `
+                        <div class="alert alert-success" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>${success}
+                        </div>
+                        ` : ''}
+
+                        <form method="POST" action="/users/profile">
+                            <div class="mb-4">
+                                <label for="fio" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Полное имя <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="fio" name="fio" 
+                                       value="${user.fio}" required maxlength="100" 
+                                       placeholder="Введите ваше полное имя">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="phone" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>Контактный телефон <span class="text-danger">*</span>
+                                </label>
+                                <input type="tel" class="form-control form-control-lg" id="phone" name="phone" 
+                                       value="${user.phone}" required maxlength="20" 
+                                       pattern="[0-9+\\-\\s\\(\\)]+" 
+                                       placeholder="+7 (999) 123-45-67">
+                                <div class="form-text">Укажите номер в любом удобном формате</div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-shield-alt me-1"></i>Системная информация
+                                </label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-control bg-light" readonly>
+                                            <small class="text-muted">Логин:</small><br>
+                                            <strong>${user.login}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-control bg-light" readonly>
+                                            <small class="text-muted">Роль:</small><br>
+                                            <strong>${user.type}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-text">Эти данные может изменить только администратор</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="type" class="form-label">
+                                    <i class="fas fa-user-tag me-1"></i>Роль
+                                </label>
+                                <input type="text" class="form-control" id="type" value="${user.type}" 
+                                       readonly disabled>
+                                <div class="form-text">Роль назначается администратором</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>На главную
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить изменения
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Дополнительная информация -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Информация о системе</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Ваши права в системе:</h6>
+                        <ul class="list-unstyled">
+                            ${user.type === 'Менеджер' ? `
+                            <li><i class="fas fa-check text-success me-2"></i>Полный доступ к системе</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Управление пользователями</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Просмотр статистики</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Управление всеми заявками</li>
+                            ` : user.type === 'Оператор' ? `
+                            <li><i class="fas fa-check text-success me-2"></i>Создание заявок</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Редактирование заявок</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Просмотр статистики</li>
+                            <li><i class="fas fa-times text-muted me-2"></i>Управление пользователями</li>
+                            ` : user.type === 'Мастер' ? `
+                            <li><i class="fas fa-check text-success me-2"></i>Работа с назначенными заявками</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Добавление комментариев</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Изменение статуса заявок</li>
+                            <li><i class="fas fa-times text-muted me-2"></i>Создание новых заявок</li>
+                            ` : `
+                            <li><i class="fas fa-check text-success me-2"></i>Просмотр своих заявок</li>
+                            <li><i class="fas fa-times text-muted me-2"></i>Создание заявок</li>
+                            <li><i class="fas fa-times text-muted me-2"></i>Редактирование заявок</li>
+                            <li><i class="fas fa-times text-muted me-2"></i>Просмотр статистики</li>
+                            `}
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Контактная информация:</h6>
+                        <p class="text-muted">
+                            Если у вас есть вопросы по работе с системой или нужно изменить роль, 
+                            обратитесь к администратору системы.
+                        </p>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Совет:</strong> Регулярно обновляйте свои контактные данные 
+                            для корректной работы системы уведомлений.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Валидация формы
+document.querySelector('form').addEventListener('submit', function(e) {
+    const fio = document.getElementById('fio').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    
+    if (!fio) {
+        e.preventDefault();
+        alert('Введите ФИО');
+        return false;
+    }
+    
+    if (!phone) {
+        e.preventDefault();
+        alert('Введите номер телефона');
+        return false;
+    }
+    
+    // Простая валидация телефона
+    const phoneRegex = /^[0-9+\-\s\(\)]+$/;
+    if (!phoneRegex.test(phone)) {
+        e.preventDefault();
+        alert('Некорректный формат номера телефона');
+        return false;
+    }
+});
+
+// Форматирование телефона
+document.getElementById('phone').addEventListener('input', function() {
+    let value = this.value.replace(/[^0-9+]/g, '');
+    if (value.startsWith('8')) {
+        value = '+7' + value.substring(1);
+    }
+    this.value = value;
+});
+</script>
+` }) %>

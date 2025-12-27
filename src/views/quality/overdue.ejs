@@ -1,0 +1,97 @@
+<%- include('../layout', { body: `
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Просроченные заявки</h1>
+            <a href="/quality/dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Назад к панели
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Список просроченных заявок -->
+<div class="card">
+    <div class="card-body">
+        ${requests.length === 0 ? `
+        <div class="text-center py-5">
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+            <h5 class="text-success">Просроченных заявок нет</h5>
+            <p class="text-muted">Все заявки выполняются в срок</p>
+        </div>
+        ` : `
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Найдено <strong>${requests.length}</strong> просроченных заявок, требующих внимания
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Действия</th>
+                        <th>Просрочено на</th>
+                        <th>Статус</th>
+                        <th>Мастер</th>
+                        <th>Клиент</th>
+                        <th>Техника</th>
+                        <th>Дата создания</th>
+                        <th>№ заявки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${requests.map(request => `
+                    <tr class="table-warning">
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="/requests/${request.id}" class="btn btn-outline-primary" title="Просмотр">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button class="btn btn-outline-warning" data-request-id="${request.id}" onclick="escalateRequest(this)" title="Эскалировать">
+                                    <i class="fas fa-exclamation"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="text-danger fw-bold">
+                                ${Math.ceil((new Date() - new Date(request.start_date)) / (1000 * 60 * 60 * 24))} дн.
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-warning text-dark">${request.request_status}</span>
+                        </td>
+                        <td>
+                            ${request.master_name ? 
+                                `<span class="badge bg-info">${request.master_name}</span>` : 
+                                `<span class="badge bg-secondary">Не назначен</span>`
+                            }
+                        </td>
+                        <td>
+                            <strong>${request.client_name}</strong><br>
+                            <small class="text-muted">${request.client_phone}</small>
+                        </td>
+                        <td>
+                            <strong>${request.home_tech_type}</strong><br>
+                            <small class="text-muted">${request.home_tech_model}</small>
+                        </td>
+                        <td>${new Date(request.start_date).toLocaleDateString('ru-RU')}</td>
+                        <td><a href="/requests/${request.id}" class="text-decoration-none fw-bold">#${request.id}</a></td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        `}
+    </div>
+</div>
+
+<script>
+function escalateRequest(button) {
+    const requestId = button.getAttribute('data-request-id');
+    if (confirm('Эскалировать заявку? Это привлечет внимание руководства к данной проблеме.')) {
+        // Здесь можно добавить AJAX запрос для эскалации
+        window.location.href = '/quality/escalations?request_id=' + requestId;
+    }
+}
+</script>
+` }) %>

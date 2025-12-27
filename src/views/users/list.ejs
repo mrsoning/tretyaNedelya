@@ -1,0 +1,112 @@
+<%- include('../layout', { body: `
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-users me-2"></i>Пользователи</h1>
+        </div>
+    </div>
+</div>
+
+<!-- Фильтры -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="/users" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">Поиск</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="${filters.search || ''}" placeholder="ФИО, телефон, логин...">
+            </div>
+            <div class="col-md-4">
+                <label for="type" class="form-label">Тип пользователя</label>
+                <select class="form-select" id="type" name="type">
+                    <option value="">Все типы</option>
+                    <option value="Заказчик" ${filters.type === 'Заказчик' ? 'selected' : ''}>Заказчик</option>
+                    <option value="Мастер" ${filters.type === 'Мастер' ? 'selected' : ''}>Мастер</option>
+                    <option value="Оператор" ${filters.type === 'Оператор' ? 'selected' : ''}>Оператор</option>
+                    <option value="Менеджер" ${filters.type === 'Менеджер' ? 'selected' : ''}>Менеджер</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-search"></i>
+                </button>
+                <a href="/users" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Список пользователей -->
+<div class="card">
+    <div class="card-body">
+        ${users.length === 0 ? `
+        <div class="text-center py-5">
+            <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Пользователи не найдены</h5>
+            <p class="text-muted">Попробуйте изменить параметры поиска</p>
+        </div>
+        ` : `
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Регистрация</th>
+                        <th>ID</th>
+                        <th>Логин</th>
+                        <th>Контакты</th>
+                        <th>ФИО</th>
+                        <th>Тип пользователя</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${users.map(user => `
+                    <tr>
+                        <td><small>${new Date(user.created_at).toLocaleDateString('ru-RU')}</small></td>
+                        <td><span class="text-muted">#${user.id}</span></td>
+                        <td><code>${user.login}</code></td>
+                        <td>
+                            <i class="fas fa-phone me-1"></i>${user.phone}
+                        </td>
+                        <td><strong>${user.fio}</strong></td>
+                        <td>
+                            <span class="badge user-type-badge" data-type="${user.type}">${user.type}</span>
+                        </td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        `}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Раскраска типов пользователей
+    const typeBadges = document.querySelectorAll('.user-type-badge');
+    typeBadges.forEach(badge => {
+        const type = badge.getAttribute('data-type');
+        badge.classList.remove('bg-secondary');
+        
+        switch(type) {
+            case 'Менеджер':
+                badge.classList.add('bg-danger');
+                break;
+            case 'Оператор':
+                badge.classList.add('bg-primary');
+                break;
+            case 'Мастер':
+                badge.classList.add('bg-success');
+                break;
+            case 'Заказчик':
+                badge.classList.add('bg-info');
+                break;
+            default:
+                badge.classList.add('bg-secondary');
+        }
+    });
+});
+</script>
+` }) %>

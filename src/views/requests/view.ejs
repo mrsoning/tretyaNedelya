@@ -1,0 +1,205 @@
+<%- include('../layout', { body: `
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-clipboard me-2"></i>Заявка №${request.id}</h1>
+            <div>
+                <button onclick="history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Назад
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Основная информация о заявке -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Информация о заявке</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Дата создания:</strong> ${new Date(request.start_date).toLocaleDateString('ru-RU')}</p>
+                        <p><strong>Тип техники:</strong> ${request.home_tech_type}</p>
+                        <p><strong>Модель:</strong> ${request.home_tech_model}</p>
+                        <p><strong>Статус:</strong> 
+                            <span class="badge bg-secondary">${request.request_status}</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Клиент:</strong> ${request.client_name}</p>
+                        <p><strong>Телефон:</strong> ${request.client_phone}</p>
+                        <p><strong>Мастер:</strong> 
+                            ${request.master_name ? request.master_name : '<span class="text-muted">Не назначен</span>'}
+                        </p>
+                        ${request.completion_date ? `
+                        <p><strong>Дата завершения:</strong> ${new Date(request.completion_date).toLocaleDateString('ru-RU')}</p>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <p><strong>Описание проблемы:</strong></p>
+                        <p class="bg-light p-3 rounded">${request.problem_description}</p>
+                    </div>
+                </div>
+                
+                ${request.repair_parts ? `
+                <div class="row">
+                    <div class="col-12">
+                        <p><strong>Запчасти и материалы:</strong></p>
+                        <p class="bg-light p-3 rounded">${request.repair_parts}</p>
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+
+        <!-- Комментарии -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Комментарии мастеров</h5>
+            </div>
+            <div class="card-body">
+                ${comments.length === 0 ? `
+                <p class="text-muted text-center py-3">
+                    <i class="fas fa-comment-slash fa-2x mb-2"></i><br>
+                    Комментариев пока нет
+                </p>
+                ` : `
+                <div class="comments-list">
+                    ${comments.map(comment => `
+                    <div class="comment mb-3 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <strong class="text-primary">${comment.author_name}</strong>
+                            <small class="text-muted">${new Date(comment.created_at).toLocaleString('ru-RU')}</small>
+                        </div>
+                        <p class="mb-0">${comment.message}</p>
+                    </div>
+                    `).join('')}
+                </div>
+                `}
+                
+                ${(user.type === 'Мастер' || user.type === 'Менеджер') ? `
+                <hr>
+                <form method="POST" action="/requests/${request.id}/comments">
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Добавить комментарий:</label>
+                        <textarea class="form-control" id="message" name="message" rows="3" 
+                                  placeholder="Введите комментарий..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Отправить
+                    </button>
+                </form>
+                ` : ''}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Управление заявкой -->
+        ${(user.type === 'Оператор' || user.type === 'Мастер' || user.type === 'Менеджер') ? `
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Управление заявкой</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/requests/${request.id}/update">
+                    <div class="mb-3">
+                        <label for="request_status" class="form-label">Статус заявки:</label>
+                        <select class="form-select" id="request_status" name="request_status">
+                            ${statuses.map(status => `
+                                <option value="${status}" ${request.request_status === status ? 'selected' : ''}>${status}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    
+                    ${(user.type === 'Оператор' || user.type === 'Менеджер') ? `
+                    <div class="mb-3">
+                        <label for="master_id" class="form-label">Назначить мастера:</label>
+                        <select class="form-select" id="master_id" name="master_id">
+                            <option value="">Не назначен</option>
+                            ${masters.map(master => `
+                                <option value="${master.id}" ${request.master_id == master.id ? 'selected' : ''}>${master.fio}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="mb-3">
+                        <label for="repair_parts" class="form-label">Запчасти и материалы:</label>
+                        <textarea class="form-control" id="repair_parts" name="repair_parts" rows="3" 
+                                  placeholder="Укажите необходимые запчасти...">${request.repair_parts || ''}</textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-save me-2"></i>Сохранить изменения
+                    </button>
+                </form>
+            </div>
+        </div>
+        ` : ''}
+
+        <!-- Информационная панель -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Статистика</h5>
+            </div>
+            <div class="card-body">
+                ${request.completion_date && request.start_date ? `
+                <div class="text-center mb-3">
+                    <h3 class="text-primary">${Math.ceil((new Date(request.completion_date) - new Date(request.start_date)) / (1000 * 60 * 60 * 24))}</h3>
+                    <small class="text-muted">дней на выполнение</small>
+                </div>
+                ` : `
+                <div class="text-center mb-3">
+                    <h3 class="text-warning">${Math.ceil((new Date() - new Date(request.start_date)) / (1000 * 60 * 60 * 24))}</h3>
+                    <small class="text-muted">дней в работе</small>
+                </div>
+                `}
+                
+                <div class="text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-comments me-1"></i>${comments.length} комментариев
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Раскраска статусов после загрузки страницы
+document.addEventListener('DOMContentLoaded', function() {
+    const statusBadges = document.querySelectorAll('.badge');
+    statusBadges.forEach(badge => {
+        const status = badge.textContent.trim();
+        badge.className = 'badge '; // Сброс классов
+        
+        switch(status) {
+            case 'Новая заявка':
+                badge.className += 'bg-primary';
+                break;
+            case 'В процессе ремонта':
+                badge.className += 'bg-warning text-dark';
+                break;
+            case 'Готова к выдаче':
+                badge.className += 'bg-success';
+                break;
+            case 'Ожидание запчастей':
+                badge.className += 'bg-info';
+                break;
+            default:
+                badge.className += 'bg-secondary';
+        }
+    });
+});
+</script>
+` }) %>
