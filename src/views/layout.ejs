@@ -64,6 +64,11 @@
                         <a class="nav-link" href="/statistics"><i class="fas fa-chart-bar me-1"></i>Статистика</a>
                     </li>
                     <% } %>
+                    <% if (user.type === 'Менеджер' || user.type === 'Менеджер по качеству') { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/quality/dashboard"><i class="fas fa-clipboard-check me-1"></i>Качество</a>
+                    </li>
+                    <% } %>
                 </ul>
                 
                 <ul class="navbar-nav">

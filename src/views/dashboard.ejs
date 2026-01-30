@@ -153,7 +153,11 @@
                         <i class="fas fa-chart-line me-2"></i>Аналитика
                     </a>
                     ` : ''}
-                    
+                    ${user.type === 'Менеджер' ? `
+                    <a href="/quality/dashboard" class="btn btn-outline-success">
+                        <i class="fas fa-clipboard-check me-2"></i>Качество
+                    </a>
+                    ` : ''}
                     <a href="/requests" class="btn btn-primary">
                         <i class="fas fa-search me-2"></i>Найти заявки
                     </a>
@@ -170,20 +174,29 @@
 </div>
 
 <script>
-// Загрузка статистики
+// Счётчик «Мои заявки» для всех пользователей
+fetch('/api/my-requests-count')
+    .then(response => response.json())
+    .then(data => {
+        const el = document.getElementById('myRequestsCount');
+        if (el) el.textContent = data.count !== undefined ? data.count : '-';
+    })
+    .catch(error => console.error('Ошибка загрузки счётчика заявок:', error));
+
+// Загрузка статистики для Менеджера/Оператора
 ${user.type === 'Менеджер' || user.type === 'Оператор' ? `
 fetch('/statistics/api/summary')
     .then(response => response.json())
     .then(data => {
         document.getElementById('totalRequestsCount').textContent = data.total_requests;
         document.getElementById('inProgressCount').textContent = data.in_progress;
-        document.getElementById('avgTime').textContent = data.avg_completion_days || '0';
+        document.getElementById('avgTime').textContent = data.avg_completion_days != null ? data.avg_completion_days : '0';
     })
     .catch(error => console.error('Ошибка загрузки статистики:', error));
 ` : ''}
 
 // Загрузка последних заявок
-fetch('/requests?limit=5')
+fetch('/requests')
     .then(response => response.text())
     .then(html => {
         document.getElementById('recentRequests').innerHTML = 

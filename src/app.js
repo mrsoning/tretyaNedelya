@@ -48,6 +48,30 @@ app.get('/', (req, res) => {
     });
 });
 
+// API: количество заявок текущего пользователя («Мои заявки»)
+app.get('/api/my-requests-count', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Не авторизован' });
+    }
+    const user = req.session.user;
+    let query = 'SELECT COUNT(*) as count FROM requests WHERE 1=1';
+    const params = [];
+    if (user.type === 'Заказчик') {
+        query += ' AND client_id = ?';
+        params.push(user.id);
+    } else if (user.type === 'Мастер') {
+        query += ' AND (master_id = ? OR master_id IS NULL)';
+        params.push(user.id);
+    }
+    db.getDatabase().get(query, params, (err, row) => {
+        if (err) {
+            console.error('Ошибка подсчёта заявок:', err);
+            return res.status(500).json({ error: 'Ошибка сервера' });
+        }
+        res.json({ count: row ? row.count : 0 });
+    });
+});
+
 app.use((req, res) => {
     res.status(404).render('error', { 
         title: 'Страница не найдена',
@@ -70,10 +94,10 @@ app.listen(PORT, () => {
     console.log('  СИСТЕМА УЧЕТА ЗАЯВОК НА РЕМОНТ БЫТОВОЙ ТЕХНИКИ');
     console.log('='.repeat(60));
     console.log(`\n  Сервер запущен: http://localhost:${PORT}`);
-    console.log('  Тестовые учетные записи:');
-    console.log('     Заказчик: user1 / pass1');
-    console.log('     Оператор: operator1 / pass1');
-    console.log('     Мастер: master1 / pass1');
-    console.log('     Менеджер: manager1 / pass1');
+    console.log('  Тестовые учетные записи (из import_БытСервис):');
+    console.log('     Менеджер: kasoo / root');
+    console.log('     Мастер: murashov123 / qwerty  или  test1 / test1');
+    console.log('     Оператор: perinaAD / 250519');
+    console.log('     Заказчик: login2 / pass2  или  login3 / pass3');
     console.log('\n  Нажмите Ctrl+C для остановки\n');
 });
