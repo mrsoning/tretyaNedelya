@@ -137,34 +137,34 @@ function processResults(results, res) {
 // Детальная статистика по заявкам
 router.get('/requests', (req, res) => {
     const { period = '30', master_id, status } = req.query;
-    
+    const periodDays = Math.min(365, Math.max(1, parseInt(period, 10) || 30));
+
     let query = `
-        SELECT r.*, 
+        SELECT r.*,
                c.fio as client_name,
                m.fio as master_name,
-               CASE 
-                   WHEN r.completion_date IS NOT NULL 
+               CASE
+                   WHEN r.completion_date IS NOT NULL
                    THEN julianday(r.completion_date) - julianday(r.start_date)
                    ELSE NULL
                END as completion_days
         FROM requests r
         LEFT JOIN users c ON r.client_id = c.id
         LEFT JOIN users m ON r.master_id = m.id
-        WHERE r.start_date >= DATE('now', '-${period} days')
+        WHERE r.start_date >= DATE('now', ?)
     `;
-    
-    const params = [];
-    
+    const params = [`-${periodDays} days`];
+
     if (master_id) {
         query += ' AND r.master_id = ?';
         params.push(master_id);
     }
-    
+
     if (status) {
         query += ' AND r.request_status = ?';
         params.push(status);
     }
-    
+
     query += ' ORDER BY r.start_date DESC';
 
     db.all(query, params, (err, requests) => {
